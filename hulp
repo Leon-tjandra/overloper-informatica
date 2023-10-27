@@ -1,0 +1,215 @@
+// Global variables
+let canvas;
+let raster;
+let jos;
+let apple;
+
+function setup() {
+  // Set up the canvas
+  canvas = createCanvas(400, 400);
+  canvas.parent("game-container");
+
+  // Set up the raster
+  raster = {
+    celGrootte: 20,
+    rijen: height / 20,
+    kolommen: width / 20
+  };
+
+  // Set up Jos the player
+  jos = {
+    x: 0,
+    y: 0,
+    stapGrootte: 20,
+    eetappel: false
+  };
+
+  // Set up the apple
+  spawnApple();
+}
+
+function draw() {
+  background(220);
+
+  // Handle movement of Jos
+  beweegJos();
+
+  // Check for collisions with the apple
+  checkAppleCollision();
+
+  // Draw Jos and apple
+  tekenJos();
+  tekenApple();
+}
+
+function beweegJos() {
+  if (keyIsDown(LEFT_ARROW)) {
+    jos.x -= jos.stapGrootte;
+  } else if (keyIsDown(RIGHT_ARROW)) {
+    jos.x += jos.stapGrootte;
+  } else if (keyIsDown(UP_ARROW)) {
+    jos.y -= jos.stapGrootte;
+  } else if (keyIsDown(DOWN_ARROW)) {
+    jos.y += jos.stapGrootte;
+  }
+
+  // Constrain Jos within the canvas
+  jos.x = constrain(jos.x, 0, width - raster.celGrootte);
+  jos.y = constrain(jos.y, 0, height - raster.celGrootte);
+}
+
+function checkAppleCollision() {
+  if (jos.x === apple.x && jos.y === apple.y) {
+    jos.eetappel = true;
+    spawnApple();
+  }
+}
+
+function spawnApple() {
+  const x = floor(random(raster.kolommen)) * raster.celGrootte;
+  const y = floor(random(raster.rijen)) * raster.celGrootte;
+  appl= { x, y };
+}
+
+function tekenJos() e {
+  fill(255, 0, 0);
+  rect(jos.x, jos.y, raster.celGrootte, raster.celGrootte);
+}
+
+function tekenApple() {
+  fill(0, 255, 0);
+  rect(apple.x, apple.y, raster.celGrootte, raster.celGrootte);
+}
+
+let raster = {
+  rijen: 12,
+  kolommen: 18,
+  celGrootte: 30
+};
+
+let jos = {
+  x: (raster.kolommen / 2) * raster.celGrootte,
+  y: (raster.rijen - 1) * raster.celGrootte,
+  stapGrootte: raster.celGrootte,
+  eetappel: false
+};
+
+let apple = {
+  x: Math.floor(Math.random() * (raster.kolommen - 1)) * raster.celGrootte,
+  y: Math.floor(Math.random() * (raster.rijen - 1)) * raster.celGrootte
+};
+
+let bommen = [];
+
+class Bom {
+  constructor() {
+    this.x = Math.floor(Math.random() * (raster.kolommen - 1)) * raster.celGrootte;
+    this.y = 0;
+    this.snelheid = Math.floor(random(1, 4)) * (raster.celGrootte / 10);
+  }
+
+  beweeg() {
+    this.y += this.snelheid;
+    if (this.y > (raster.rijen - 1) * raster.celGrootte) {
+      this.y = 0;
+    }
+  }
+
+  toon() {
+    fill(255);
+    rect(this.x, this.y, raster.celGrootte, raster.celGrootte);
+  }
+}
+
+for (let i = 0; i < 5; i++) {
+  bommen[i] = new Bom();
+}
+
+function tekenJos() {
+  fill('red');
+  rect(jos.x, jos.y, raster.celGrootte, raster.celGrootte);
+}
+
+function toonApple() {
+  fill('green');
+  rect(apple.x, apple.y, raster.celGrootte, raster.celGrootte);
+}
+
+function toonBommen() {
+  for (let i = 0; i < bommen.length; i++) {
+    bommen[i].beweeg();
+    bommen[i].toon();
+  }
+}
+
+function toonLevens() {
+  fill(255);
+  textSize(20);
+  text("Levens: " + leven, 10, 30);
+}
+
+function eindScherm() {
+  background(0);
+  textSize(50);
+  textAlign(CENTER);
+  if (leven > 0) {
+    fill('green');
+    text("Gewonnen!", width / 2, height / 2);
+  } else {
+    fill('red');
+    text("Verloren!", width / 2, height / 2);
+  }
+}
+
+function checkCollision() {
+  for (let i = 0; i < bommen.length; i++) {
+    if (jos.x === bommen[i].x && jos.y === bommen[i].y) {
+      leven--;
+      if (leven <= 0) {
+        gameover = true;
+      }
+      jos.x = (raster.kolommen / 2) * raster.celGrootte;
+      jos.y = (raster.rijen - 1) * raster.celGrootte;
+    }
+  }
+  if (jos.x === apple.x && jos.y === apple.y) {
+    leven++;
+    jos.eetappel = true;
+    apple.x = Math.floor(Math.random() * (raster.kolommen - 1)) * raster.celGrootte;
+    apple.y = Math.floor(Math.random() * (raster.rijen - 1)) * raster.celGrootte;
+  } else {
+    jos.eetappel = false;
+  }
+}
+
+function setup() {
+  createCanvas(raster.kolommen * raster.celGrootte, raster.rijen * raster.celGrootte);
+}
+
+function draw() {
+  if (gameover) {
+    eindScherm();
+  } else {
+    background(0);
+    tekenJos();
+    toonApple();
+    toonBommen();
+    toonLevens();
+    checkCollision();
+  }
+}
+
+function keyPressed() {
+  if (keyCode === 65) {
+    jos.x -= jos.stapGrootte;
+  } else if (keyCode === 68) {
+    jos.x += jos.stapGrootte;
+  } else if (keyCode === 87) {
+    jos.y -= jos.stapGrootte;
+  } else if (keyCode === 83) {
+    jos.y += jos.stapGrootte;
+  }
+}
+
+let leven = 3;
+let gameover = false;

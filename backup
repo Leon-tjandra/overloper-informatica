@@ -4,11 +4,11 @@ class Raster {
     this.aantalKolommen = k;
     this.celGrootte = null;
   }
-  
+
   berekenCelGrootte() {
     this.celGrootte = canvas.width / this.aantalKolommen;
   }
-  
+
   teken() {
     push();
     noFill();
@@ -39,27 +39,12 @@ class Bom {
   beweeg() {
     this.y += floor(random(-1, 1)) * this.stapGrootte;
     this.y = constrain(this.y, 0, canvas.height - raster.celGrootte);
-    if (this.y >= canvas.height-50 || this.y < 10) {
-        this.stapGrootte *= -1;
-    }
-  
   }
 
 
   toon() {
     image(bomPlaatje,this.x,this.y,raster.celGrootte,raster.celGrootte);
   }
-}
-
-class Appel {
-  constructor(x,y){
-    this.x = floor(random(0,raster.aantalRijen))*raster.celGrootte;
-    this.y = floor(random(0,raster.aantalRijen))*raster.celGrootte;
-    this.sprite = apple;
-  }
-
-   toon() {     image(apple,this.x,this.y,raster.celGrootte,raster.celGrootte);
-   }
 }
 
 
@@ -71,8 +56,8 @@ class Jos {
     this.frameNummer = 3;
     this.stapGrootte = null;
     this.gehaald = false;
+    this.leven = 1;
     this.StaOpbom = false;
-    this.geraaktebom=null;
   }
   beweeg() {
     if (keyIsDown(65)) {
@@ -104,28 +89,25 @@ class Jos {
       return false;
     }
   }
-  wordtGeraakt(Appel) {
-    if (this.x == Appel.x && this.y == Appel.y) {
-      return true;
-    }
-    else {
-      return false;
+
+  eet(Appel) {
+    if (dist(this.x,this.y,Appel.x,Appel.y)) {
+      Appel.y = -100;
+      eve.leven++;
     }
   }
   toon() {
     image(this.animatie[this.frameNummer], this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
-  staatOp(bommenArray) {
-    for (var b = 0;b < bommenArray.length;b++) {
-      if (bommenArray[b].x == this.x && bommenArray[b].y == this.y) {
+  staatOp(bommenLijst) {
+    for (var b = 0;b < bommenLijst.length;b++) {
+      if (bommenLijst[b].x == this.x && bommenLijst[b].y == this.y) {
         this.StaOpbom = true;
-        this.geraaktebom = b;
       }
   }
     return this.StaOpbom;
-    return this.geraaktebom;
   }  
-  
+
   toon() {
 image(this.animatie[this.frameNummer],this.x,this.y,this.stapGrootte,this.stapGrootte);
   }
@@ -147,7 +129,7 @@ class Vijand {
     image(this.sprite, this.x, this.y, raster.celGrootte, raster.celGrootte);
   }
 }
-  
+
 
 
 function preload() {
@@ -157,15 +139,15 @@ function preload() {
 }
 
 var bommenArray = [];
-var aantallevens = 3
+
 
 function setup() {
-  canvas = createCanvas(900,550);
+  canvas = createCanvas(900,600);
   canvas.parent();
   frameRate(10);
   textFont("Verdana");
-  textSize(20);
-  
+  textSize(50);
+
   raster = new Raster(12,18);
   raster.berekenCelGrootte();
 
@@ -173,8 +155,6 @@ function setup() {
   bommenArray.push(new Bom());
   }
 
-  appel = new Appel();
-  
   eve = new Jos();
   eve.stapGrootte = 1*raster.celGrootte;
   for (var b = 0;b < 6;b++) {
@@ -188,18 +168,18 @@ function setup() {
 
   bob = new Vijand(600,400);
   bob.stapGrootte = 1*eve.stapGrootte;
-  bob.sprite = loadImage("images/sprites/Bob100px/Bob.png");
+  bob.sprite = loadImage("images/sprites/Bob100px/Bob.png");  
+
+  apple = new Appel(300,100);
+  apple.sprite = loadImage("images/sprites/appel_1.png");
 }
 
-  
+
 
 function draw() {
   background(brug);
   for (var b = 0;b < bommenArray.length;b++) {
     bommenArray[b].toon();
-  }
-  for (var b = 0;b < bommenArray.length;b++) {
-    bommenArray[b].beweeg();
   }
 
   if (eve.aanDeBeurt) {
@@ -218,41 +198,37 @@ function draw() {
   eve.toon();
   alice.toon();
   bob.toon();
-  appel.toon();
   eve.beweeg();
   alice.beweeg();
   bob.beweeg();
-  
-  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob)) {
-      aantallevens--;
-    }
-  if (eve.staatOp(bommenArray)) {
-    eve.StaOpbom = false;
-    aantallevens--;
-    bommenArray.splice(eve.geraaktebom, 1)
+  apple.toon();
+
+  if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.staatOp(bommenArray)) {
+    background('red');
+    fill('white');
+    text("Je bent trash!",225,300);
+    noLoop();
   }
 
-  if (eve.wordtGeraakt(appel)) {
-    aantallevens++;
-    appel.x = 1000;
-  }
-  if(aantallevens > 0){
-  text("Aantal Levens = " + round(aantallevens), eve.x,20 );
-  }
-  
-  if (aantallevens==0){
-    background('red');
-  fill('white');
-  textSize(50);
-  text("Goed geprobeerd!",225,300);
-  noLoop();
-  }
   if (eve.gehaald) {
     background('green');
     fill('white');
-    textSize(50);
     text("Goed gedaan!",225,300);
     noLoop();
   }
-  
+  text("Aantal Levens = " + round(Jos.leven), 10,50 );
+
 }
+
+class Appel {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+    this.sprite = null;
+  }
+  toon() {
+      image(apple, this.x, this.y, raster.celGrootte, raster.celGrootte);
+    }
+
+}
+

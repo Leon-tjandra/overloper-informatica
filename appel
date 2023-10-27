@@ -1,0 +1,27 @@
+function Appel(x, y) {
+  this.x = x;
+  this.y = y;
+}
+
+if (jos.x === apple.x && jos.y === apple.y) {
+  leven++;
+}
+    
+function Appel(x, y) {
+  this.x = x;
+  this.y = y;
+}
+
+
+class Appel {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+let apple = new Appel(x, y);
+
+if (jos.x === apple.x && jos.y === apple.y) {
+  leven++;
+}
